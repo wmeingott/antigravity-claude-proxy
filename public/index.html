@@ -114,8 +114,10 @@
                 class="w-8 h-8 rounded bg-gradient-to-br from-neon-purple to-blue-600 flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                 AG</div>
             <div class="flex flex-col">
-                <span class="text-sm font-bold tracking-wide text-white" x-text="$store.global.t('systemName')">ANTIGRAVITY</span>
-                <span class="text-[10px] text-gray-500 font-mono tracking-wider" x-text="$store.global.t('systemDesc')">CLAUDE PROXY SYSTEM</span>
+                <span class="text-sm font-bold tracking-wide text-white"
+                    x-text="$store.global.t('systemName')">ANTIGRAVITY</span>
+                <span class="text-[10px] text-gray-500 font-mono tracking-wider"
+                    x-text="$store.global.t('systemDesc')">CLAUDE PROXY SYSTEM</span>
             </div>
         </div>
 
@@ -151,7 +153,8 @@
 
         <!-- Sidebar -->
         <div class="w-64 bg-space-900 border-r border-space-border flex flex-col pt-6 pb-4">
-            <div class="px-4 mb-2 text-xs font-bold text-gray-600 uppercase tracking-widest" x-text="$store.global.t('main')">Main</div>
+            <div class="px-4 mb-2 text-xs font-bold text-gray-600 uppercase tracking-widest"
+                x-text="$store.global.t('main')">Main</div>
             <nav class="flex flex-col gap-1">
                 <button
                     class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5"
@@ -165,6 +168,16 @@
                 </button>
                 <button
                     class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5"
+                    :class="{'active': $store.global.activeTab === 'models'}"
+                    @click="$store.global.activeTab = 'models'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span x-text="$store.global.t('models')">Models</span>
+                </button>
+                <button
+                    class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5"
                     :class="{'active': $store.global.activeTab === 'accounts'}"
                     @click="$store.global.activeTab = 'accounts'">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,7 +188,8 @@
                 </button>
             </nav>
 
-            <div class="px-4 mt-8 mb-2 text-xs font-bold text-gray-600 uppercase tracking-widest" x-text="$store.global.t('system')">System</div>
+            <div class="px-4 mt-8 mb-2 text-xs font-bold text-gray-600 uppercase tracking-widest"
+                x-text="$store.global.t('system')">System</div>
             <nav class="flex flex-col gap-1">
                 <button
                     class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5"
@@ -219,6 +233,11 @@
                 x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from"
                 class="max-w-7xl mx-auto h-full"></div>
 
+            <!-- Models -->
+            <div x-show="$store.global.activeTab === 'models'" x-load-view="'models'"
+                x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from"
+                class="max-w-7xl mx-auto h-full"></div>
+
             <!-- Logs -->
             <div x-show="$store.global.activeTab === 'logs'" x-load-view="'logs'" x-transition:enter="fade-enter-active"
                 x-transition:enter-start="fade-enter-from" class="h-full"></div>
@@ -241,21 +260,24 @@
             <h3 class="font-bold text-lg text-white" x-text="$store.global.t('addNode')">Add New Account</h3>
 
             <div class="py-6 flex flex-col gap-4">
-                <p class="text-sm text-gray-400" x-text="$store.global.t('connectGoogleDesc')">Connect a Google Workspace account to increase your API quota limit.
+                <p class="text-sm text-gray-400" x-text="$store.global.t('connectGoogleDesc')">Connect a Google
+                    Workspace account to increase your API quota limit.
                     The account will be used to proxy Claude requests via Antigravity.</p>
 
-                <button
-                    class="btn btn-primary flex items-center justify-center gap-3 h-12"
-                    @click="addAccountWeb">
+                <button class="btn btn-primary flex items-center justify-center gap-3 h-12" @click="addAccountWeb">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                         <path
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z">
+                        </path>
                         <path
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z">
+                        </path>
                         <path
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z">
+                        </path>
                         <path
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z">
+                        </path>
                     </svg>
                     <span x-text="$store.global.t('connectGoogle')">Connect Google Account</span>
                 </button>
@@ -264,7 +286,8 @@
 
                 <div class="collapse collapse-arrow bg-space-800 border border-space-border/50">
                     <input type="checkbox" />
-                    <div class="collapse-title text-sm font-medium text-gray-400" x-text="$store.global.t('useCliCommand')">
+                    <div class="collapse-title text-sm font-medium text-gray-400"
+                        x-text="$store.global.t('useCliCommand')">
                         Use CLI Command
                     </div>
                     <div class="collapse-content">
@@ -295,6 +318,7 @@
     <script src="js/settings-store.js"></script>
     <!-- 3. Components (register to window.Components) -->
     <script src="js/components/dashboard.js"></script>
+    <script src="js/components/models.js"></script>
     <script src="js/components/account-manager.js"></script>
     <script src="js/components/claude-config.js"></script>
     <script src="js/components/logs-viewer.js"></script>

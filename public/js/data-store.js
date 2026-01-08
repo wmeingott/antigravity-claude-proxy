@@ -69,34 +69,32 @@ document.addEventListener('alpine:init', () => {
         computeQuotaRows() {
             const models = this.models || [];
             const rows = [];
-            const showExhausted = Alpine.store('settings')?.showExhausted ?? true; // Need settings store
-            // Temporary debug flag or settings flag to show hidden models
-            const showHidden = Alpine.store('settings')?.showHiddenModels ?? false;
+            const showExhausted = Alpine.store('settings')?.showExhausted ?? true;
 
             models.forEach(modelId => {
                 // Config
                 const config = this.modelConfig[modelId] || {};
                 const family = this.getModelFamily(modelId);
 
-                // Smart Visibility Logic:
-                // 1. If explicit config exists, use it.
-                // 2. If no config, default 'unknown' families to HIDDEN to prevent clutter.
-                // 3. Known families (Claude/Gemini) default to VISIBLE.
+                // Visibility Logic for Models Tab (quotaRows):
+                // 1. If explicitly hidden via config, always hide
+                // 2. If no config, default 'unknown' families to HIDDEN
+                // 3. Known families (Claude/Gemini) default to VISIBLE
+                // Note: showHiddenModels toggle is for Settings page only, NOT here
                 let isHidden = config.hidden;
                 if (isHidden === undefined) {
                     isHidden = (family === 'other' || family === 'unknown');
                 }
 
-                // Skip hidden models unless "Show Hidden" is enabled
-                if (isHidden && !showHidden) return;
+                // Models Tab: ALWAYS hide hidden models (no toggle check)
+                if (isHidden) return;
 
                 // Filters
                 if (this.filters.family !== 'all' && this.filters.family !== family) return;
                 if (this.filters.search) {
                     const searchLower = this.filters.search.toLowerCase();
-                    const aliasMatch = config.alias && config.alias.toLowerCase().includes(searchLower);
                     const idMatch = modelId.toLowerCase().includes(searchLower);
-                    if (!aliasMatch && !idMatch) return;
+                    if (!idMatch) return;
                 }
 
                 // Data Collection
@@ -138,7 +136,7 @@ document.addEventListener('alpine:init', () => {
 
                 rows.push({
                     modelId,
-                    displayName: config.alias || modelId, // Use alias if available
+                    displayName: modelId, // Simplified: no longer using alias
                     family,
                     minQuota,
                     avgQuota, // Added Average Quota
@@ -165,6 +163,43 @@ document.addEventListener('alpine:init', () => {
             if (lower.includes('claude')) return 'claude';
             if (lower.includes('gemini')) return 'gemini';
             return 'other';
+        },
+
+        /**
+         * Get quota data without filters applied (for Dashboard global charts)
+         * Returns array of { modelId, family, quotaInfo: [{pct}] }
+         */
+        getUnfilteredQuotaData() {
+            const models = this.models || [];
+            const rows = [];
+            const showHidden = Alpine.store('settings')?.showHiddenModels ?? false;
+
+            models.forEach(modelId => {
+                const config = this.modelConfig[modelId] || {};
+                const family = this.getModelFamily(modelId);
+
+                // Smart visibility (same logic as computeQuotaRows)
+                let isHidden = config.hidden;
+                if (isHidden === undefined) {
+                    isHidden = (family === 'other' || family === 'unknown');
+                }
+                if (isHidden && !showHidden) return;
+
+                const quotaInfo = [];
+                // Use ALL accounts (no account filter)
+                this.accounts.forEach(acc => {
+                    const limit = acc.limits?.[modelId];
+                    if (!limit) return;
+                    const pct = limit.remainingFraction !== null ? Math.round(limit.remainingFraction * 100) : 0;
+                    quotaInfo.push({ pct });
+                });
+
+                if (quotaInfo.length === 0) return;
+
+                rows.push({ modelId, family, quotaInfo });
+            });
+
+            return rows;
         }
     });
 });

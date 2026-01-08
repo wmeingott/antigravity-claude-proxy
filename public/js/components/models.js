@@ -1,45 +1,34 @@
 /**
- * Model Manager Component
- * Handles model configuration (pinning, hiding, aliasing, mapping)
+ * Models Component
+ * Displays model quota/status list
  * Registers itself to window.Components for Alpine.js to consume
  */
 window.Components = window.Components || {};
 
-window.Components.modelManager = () => ({
-    // Track which model is currently being edited (null = none)
-    editingModelId: null,
-
+window.Components.models = () => ({
     init() {
-        // Component is ready
+        // Ensure data is fetched when this tab becomes active
+        this.$watch('$store.global.activeTab', (val) => {
+            if (val === 'models') {
+                // Trigger recompute to ensure filters are applied
+                this.$nextTick(() => {
+                    Alpine.store('data').computeQuotaRows();
+                });
+            }
+        });
+
+        // Initial compute if already on models tab
+        if (this.$store.global.activeTab === 'models') {
+            this.$nextTick(() => {
+                Alpine.store('data').computeQuotaRows();
+            });
+        }
     },
 
     /**
-     * Start editing a model's mapping
-     * @param {string} modelId - The model to edit
-     */
-    startEditing(modelId) {
-        this.editingModelId = modelId;
-    },
-
-    /**
-     * Stop editing
-     */
-    stopEditing() {
-        this.editingModelId = null;
-    },
-
-    /**
-     * Check if a model is being edited
-     * @param {string} modelId - The model to check
-     */
-    isEditing(modelId) {
-        return this.editingModelId === modelId;
-    },
-
-    /**
-     * Update model configuration with authentication
+     * Update model configuration (Pin/Hide quick actions)
      * @param {string} modelId - The model ID to update
-     * @param {object} configUpdates - Configuration updates (pinned, hidden, alias, mapping)
+     * @param {object} configUpdates - Configuration updates (pinned, hidden)
      */
     async updateModelConfig(modelId, configUpdates) {
         const store = Alpine.store('global');
@@ -63,7 +52,7 @@ window.Components.modelManager = () => ({
             };
             Alpine.store('data').computeQuotaRows();
         } catch (e) {
-            store.showToast('Failed to update model config: ' + e.message, 'error');
+            store.showToast('Failed to update: ' + e.message, 'error');
         }
     }
 });

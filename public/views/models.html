@@ -1,0 +1,193 @@
+<div x-data="models" class="view-container">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-xl font-bold text-white" x-text="$store.global.t('models')">Models</h2>
+            <p class="text-sm text-gray-500" x-text="$store.global.t('modelsPageDesc')">Real-time quota and status for
+                all available models.</p>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-lg h-auto mb-6">
+        <div class="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+            <!-- Custom Select -->
+            <div class="relative w-full md:w-64 h-10">
+                <select
+                    class="appearance-none w-full h-full bg-space-800 border border-space-border text-gray-300 rounded-lg pl-4 pr-10 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all truncate text-sm"
+                    x-model="$store.data.filters.account" @change="$store.data.computeQuotaRows()">
+                    <option value="all" x-text="$store.global.t('allAccounts')">All Accounts</option>
+                    <template x-for="acc in $store.data.accounts" :key="acc.email">
+                        <option :value="acc.email" x-text="acc.email.split('@')[0]"></option>
+                    </template>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="join h-10 w-full md:w-auto overflow-x-auto">
+                <button
+                    class="join-item btn btn-sm h-full flex-1 md:flex-none px-4 md:px-6 border-space-border bg-space-800 text-gray-400 hover:text-white hover:bg-space-700 hover:border-space-600 transition-all font-medium text-xs tracking-wide whitespace-nowrap"
+                    :class="{'bg-neon-purple text-white border-neon-purple hover:bg-purple-600 hover:border-purple-500': $store.data.filters.family === 'all'}"
+                    @click="$store.data.filters.family = 'all'; $store.data.computeQuotaRows()"
+                    x-text="$store.global.t('allCaps')">ALL</button>
+                <button
+                    class="join-item btn btn-sm h-full flex-1 md:flex-none px-4 md:px-6 border-space-border bg-space-800 text-gray-400 hover:text-white hover:bg-space-700 hover:border-space-600 transition-all font-medium text-xs tracking-wide whitespace-nowrap"
+                    :class="{'bg-neon-purple text-white border-neon-purple hover:bg-purple-600 hover:border-purple-500': $store.data.filters.family === 'claude'}"
+                    @click="$store.data.filters.family = 'claude'; $store.data.computeQuotaRows()"
+                    x-text="$store.global.t('claudeCaps')">CLAUDE</button>
+                <button
+                    class="join-item btn btn-sm h-full flex-1 md:flex-none px-4 md:px-6 border-space-border bg-space-800 text-gray-400 hover:text-white hover:bg-space-700 hover:border-space-600 transition-all font-medium text-xs tracking-wide whitespace-nowrap"
+                    :class="{'bg-neon-purple text-white border-neon-purple hover:bg-purple-600 hover:border-purple-500': $store.data.filters.family === 'gemini'}"
+                    @click="$store.data.filters.family = 'gemini'; $store.data.computeQuotaRows()"
+                    x-text="$store.global.t('geminiCaps')">GEMINI</button>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative w-full md:w-72 h-10">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" :placeholder="$store.global.t('searchPlaceholder')"
+                class="w-full h-full bg-space-800 border border-space-border text-gray-300 rounded-lg pl-10 pr-4 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all text-sm placeholder-gray-600"
+                x-model.debounce="$store.data.filters.search" @input="$store.data.computeQuotaRows()">
+        </div>
+    </div>
+
+    <!-- Main Table -->
+    <div class="glass-panel rounded-xl overflow-x-auto min-h-[400px]">
+        <table class="standard-table"
+            :class="{'table-xs': $store.settings.compact, 'table-sm': !$store.settings.compact}">
+            <thead>
+                <tr>
+                    <th class="w-14 py-3 pl-4 whitespace-nowrap" x-text="$store.global.t('stat')">Stat</th>
+                    <th class="py-3 whitespace-nowrap" x-text="$store.global.t('modelIdentity')">Model Identity</th>
+                    <th class="min-w-[12rem] py-3 whitespace-nowrap" x-text="$store.global.t('globalQuota')">Global
+                        Quota</th>
+                    <th class="min-w-[8rem] py-3 whitespace-nowrap" x-text="$store.global.t('nextReset')">Next Reset
+                    </th>
+                    <th class="py-3 whitespace-nowrap" x-text="$store.global.t('distribution')">Account
+                        Distribution</th>
+                    <th class="w-20 py-3 pr-4 text-right whitespace-nowrap" x-text="$store.global.t('actions')">Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="text-sm">
+                <template x-for="row in $store.data.quotaRows" :key="row.modelId">
+                    <tr class="group">
+                        <td class="pl-4">
+                            <div class="w-2 h-2 rounded-full transition-all duration-500"
+                                :class="row.avgQuota > 0 ? 'bg-neon-green shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="font-bold text-gray-200 group-hover:text-neon-purple transition-colors"
+                                x-text="row.modelId"></div>
+                            <div class="text-[10px] font-mono text-gray-500 uppercase"
+                                x-text="$store.global.t('family' + row.family.charAt(0).toUpperCase() + row.family.slice(1))">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <div class="flex justify-between text-xs font-mono">
+                                    <span x-text="row.avgQuota + '%'"
+                                        :class="row.avgQuota > 0 ? 'text-white' : 'text-red-500'"></span>
+                                </div>
+                                <progress class="progress w-full h-1 bg-space-800"
+                                    :class="row.avgQuota > 50 ? 'progress-gradient-success' : (row.avgQuota > 0 ? 'progress-gradient-warning' : 'progress-gradient-error')"
+                                    :value="row.avgQuota" max="100"></progress>
+                            </div>
+                        </td>
+                        <td class="font-mono text-xs">
+                            <span x-text="row.resetIn"
+                                :class="(row.resetIn && row.resetIn.indexOf('h') === -1 && row.resetIn !== '-') ? 'text-neon-purple font-bold' : 'text-gray-400'"></span>
+                        </td>
+                        <td>
+                            <div class="flex items-center justify-end gap-3">
+                                <div
+                                    class="text-[10px] font-mono text-gray-500 hidden xl:block text-right leading-tight opacity-70">
+                                    <div
+                                        x-text="$store.global.t('activeCount', {count: row.quotaInfo.filter(q => q.pct > 0).length})">
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-1 justify-end max-w-[200px]">
+                                    <template x-for="q in row.quotaInfo" :key="q.fullEmail">
+                                        <div class="tooltip tooltip-left" :data-tip="q.fullEmail + ' (' + q.pct + '%)">
+                                            <div class="w-1.5 h-3 rounded-[1px] transition-all hover:scale-125 cursor-help"
+                                                :class="q.pct > 50 ? 'bg-neon-green opacity-80' : (q.pct > 0 ? 'bg-yellow-500 opacity-80' : 'bg-red-900 opacity-50')">
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right pr-4">
+                            <div
+                                class="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <!-- Pin Toggle -->
+                                <button class="btn btn-xs btn-circle transition-colors"
+                                    :class="row.pinned ? 'bg-neon-purple/20 text-neon-purple border-neon-purple/50 hover:bg-neon-purple/30' : 'btn-ghost text-gray-600 hover:text-gray-300'"
+                                    @click="await updateModelConfig(row.modelId, { pinned: !row.pinned })"
+                                    :title="$store.global.t('pinToTop')">
+                                    <svg x-show="row.pinned" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                                    </svg>
+                                    <svg x-show="!row.pinned" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                </button>
+                                <!-- Hide Toggle -->
+                                <button class="btn btn-xs btn-circle transition-colors"
+                                    :class="row.hidden ? 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30' : 'btn-ghost text-gray-400 hover:text-white'"
+                                    @click="await updateModelConfig(row.modelId, { hidden: !row.hidden })"
+                                    :title="$store.global.t('toggleVisibility')">
+                                    <svg x-show="!row.hidden" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg x-show="row.hidden" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+                <!-- Loading -->
+                <tr x-show="$store.data.loading && !$store.data.quotaRows.length">
+                    <td colspan="6" class="h-64 text-center">
+                        <div class="flex flex-col items-center justify-center gap-3">
+                            <span class="loading loading-bars loading-md text-neon-purple"></span>
+                            <span class="text-xs font-mono text-gray-600 animate-pulse"
+                                x-text="$store.global.t('establishingUplink')">ESTABLISHING
+                                UPLINK...</span>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Empty -->
+                <tr x-show="!$store.data.loading && $store.data.quotaRows.length === 0">
+                    <td colspan="6" class="h-64 text-center text-gray-600 font-mono text-xs"
+                        x-text="$store.global.t('noSignal')">
+                        NO SIGNAL DETECTED
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

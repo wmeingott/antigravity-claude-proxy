@@ -15,6 +15,7 @@ document.addEventListener('alpine:init', () => {
         translations: {
             en: {
                 dashboard: "Dashboard",
+                models: "Models",
                 accounts: "Accounts",
                 logs: "Logs",
                 settings: "Settings",
@@ -77,14 +78,16 @@ document.addEventListener('alpine:init', () => {
                 noSignal: "NO SIGNAL DETECTED",
                 establishingUplink: "ESTABLISHING UPLINK...",
                 // Settings - Models
-                modelsDesc: "Manage visibility and ordering of models in the dashboard.",
+                modelsDesc: "Configure model visibility, pinning, and request redirection.",
+                modelsPageDesc: "Real-time quota and status for all available models.",
                 showHidden: "Show Hidden Models",
                 modelId: "Model ID",
-                alias: "Alias",
                 actions: "Actions",
                 pinToTop: "Pin to top",
                 toggleVisibility: "Toggle Visibility",
                 noModels: "NO MODELS DETECTED",
+                modelMappingHint: "Server-side model redirection. Claude Code users: see 'Claude CLI' tab for easier setup.",
+                modelMapping: "Mapping (Target Model)",
                 // Settings - Claude
                 proxyConnection: "Proxy Connection",
                 modelSelection: "Model Selection",
@@ -219,6 +222,7 @@ document.addEventListener('alpine:init', () => {
             },
             zh: {
                 dashboard: "仪表盘",
+                models: "模型列表",
                 accounts: "账号管理",
                 logs: "运行日志",
                 settings: "系统设置",
@@ -282,14 +286,16 @@ document.addEventListener('alpine:init', () => {
                 noSignal: "无信号连接",
                 establishingUplink: "正在建立上行链路...",
                 // Settings - Models
-                modelsDesc: "管理仪表盘中模型的可见性和排序。",
+                modelsDesc: "配置模型的可见性、置顶和请求重定向。",
+                modelsPageDesc: "所有可用模型的实时配额和状态。",
                 showHidden: "显示隐藏模型",
                 modelId: "模型 ID",
-                alias: "别名",
                 actions: "操作",
                 pinToTop: "置顶",
                 toggleVisibility: "切换可见性",
                 noModels: "未检测到模型",
+                modelMappingHint: "服务端模型重定向功能。Claude Code 用户请使用 'Claude CLI' 标签页以便捷配置。",
+                modelMapping: "映射 (目标模型)",
                 // Settings - Claude
                 proxyConnection: "代理连接",
                 modelSelection: "模型选择",

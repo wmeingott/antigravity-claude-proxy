@@ -439,7 +439,7 @@ window.Components.dashboard = () => ({
                         padding: 10,
                         displayColors: true,
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 return context.dataset.label + ': ' + context.parsed.y;
                             }
                         }
@@ -531,7 +531,8 @@ window.Components.dashboard = () => ({
             this.charts.quotaDistribution.destroy();
         }
 
-        const rows = Alpine.store('data').quotaRows;
+        // Use UNFILTERED data for global health chart
+        const rows = Alpine.store('data').getUnfilteredQuotaData();
 
         // Dynamic family aggregation (supports any model family)
         const familyStats = {};
@@ -580,12 +581,12 @@ window.Components.dashboard = () => ({
 
             // Labels using translations if possible
             const activeLabel = family === 'claude' ? store.t('claudeActive') :
-                              family === 'gemini' ? store.t('geminiActive') :
-                              `${familyName} ${store.t('activeSuffix')}`;
+                family === 'gemini' ? store.t('geminiActive') :
+                    `${familyName} ${store.t('activeSuffix')}`;
 
             const depletedLabel = family === 'claude' ? store.t('claudeEmpty') :
-                                family === 'gemini' ? store.t('geminiEmpty') :
-                                `${familyName} ${store.t('depleted')}`;
+                family === 'gemini' ? store.t('geminiEmpty') :
+                    `${familyName} ${store.t('depleted')}`;
 
             // Active segment
             data.push(activeVal);
